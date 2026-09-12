@@ -1,9 +1,15 @@
 from decimal import Decimal
 
-from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from typing import TYPE_CHECKING
 
 from app.database import Base
+from app.schemas import Category
+
+if TYPE_CHECKING:
+    from app.models.categories import Category
 
 
 class Product(Base):
@@ -16,4 +22,9 @@ class Product(Base):
     image_url: Mapped[str | None] = mapped_column(String(200), nullable=True)
     stock: Mapped[int] = mapped_column(Integer, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
 
+    category: Mapped["Category"] = relationship(
+        "Category",
+        back_populates="products",
+    )
