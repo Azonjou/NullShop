@@ -8,7 +8,7 @@ DATABASE_URL = "sqlite:///ecommerce.db"
 engine = create_engine(DATABASE_URL, echo=True)
 
 # Настраивеам фабрику сеансов
-Session = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(bind=engine)
 
 # Определяем базовый класс для моделей
 class Base(DeclarativeBase):
