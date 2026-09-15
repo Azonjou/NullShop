@@ -71,6 +71,7 @@ async def update_category(category_id: int, category: CategoryCreate, db: Sessio
         .values(**category.model_dump())
     )
     db.commit()
+    db.refresh(db_category)
     return db_category
 
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)
