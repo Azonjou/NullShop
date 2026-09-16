@@ -61,7 +61,7 @@ async def get_products_by_category(category_id: int, db: Session = Depends(get_d
     return db_product
 
 @router.get("/{product_id}", response_model=ProductShema, status_code=status.HTTP_200_OK)
-async def get_product(product: ProductCreate, product_id: int, db: Session = Depends(get_db)):
+async def get_product(product_id: int, db: Session = Depends(get_db)):
     """Возвращает детальную информацию о товаре по его ID"""
     status_product = select(ProductModel).where(
         ProductModel.id == product_id,
@@ -74,7 +74,7 @@ async def get_product(product: ProductCreate, product_id: int, db: Session = Dep
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Product not found or inactive")
 
     status_category = select(CategoryModel).where(
-        CategoryModel.id == category_id,
+        CategoryModel.id == db_product.category_id,
         CategoryModel.is_active == True
     )
 
@@ -83,10 +83,10 @@ async def get_product(product: ProductCreate, product_id: int, db: Session = Dep
     if stmt is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Category not found or inactive")
 
-    return status_product
+    return db_product
 
 @router.put("/{product_id}", response_model=ProductShema, status_code=status.HTTP_200_OK)
-async def update_product(product: ProductCreate, product_id: int, db: Session = Depends(get_db)):
+async def update_product(product_id: int, product: ProductCreate, db: Session = Depends(get_db)):
     """Обновляет товар по его ID"""
     put_status_product = select(ProductModel).where(
         ProductModel.id == product_id,
