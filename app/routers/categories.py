@@ -68,7 +68,7 @@ async def update_category(category_id: int, category: CategoryCreate, db: AsyncS
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category cannot be its own parent")
 
     # Обновление категории
-    update_data = category.model_dump(exclude_unset=True)
+    update_data = category.model_dump(exclude_unset=True) #exclude_unset=True - обновляет только переданные поля
     await db.execute(
         update(CategoryModel)
         .where(
@@ -80,16 +80,21 @@ async def update_category(category_id: int, category: CategoryCreate, db: AsyncS
     return db_category
 
 @router.delete("/{category_id}", status_code=status.HTTP_200_OK)
-async def delete_category(category_id: int, db: Session = Depends(get_async_db)):
+async def delete_category(category_id: int, db: AsyncSession = Depends(get_async_db)):
     """Удаляет категорию по Id"""
     # Проверка существования активной категории
     stmt = select(CategoryModel).where(CategoryModel.id == category_id, CategoryModel.is_active == True)
-    category = db.scalars(stmt).first()
+    result = await db.scalars(stmt)
+    category = result.first()
     if category is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
 
     # Логическое удаление категории (установка is_active=False)
-    db.execute(update(CategoryModel).where(CategoryModel.id == category_id).values(is_active=False))
-    db.commit()
+    await db.execute(
+        update(CategoryModel).where(
+            CategoryModel.id == category_id
+        ).values(is_active=False)
+    )
+    await db.commit()
 
     return {"status": "success", "message": "Category marked as inactive"}
