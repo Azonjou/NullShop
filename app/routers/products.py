@@ -18,7 +18,11 @@ router = APIRouter(
 @router.get("/", response_model=list[ProductShema], status_code=status.HTTP_200_OK)
 async def get_all_products(db: Session = Depends(get_db)):
     """Возвращаем список всех товаров"""
-    stmt = select(ProductModel).where(ProductModel.is_active == True)
+    stmt = select(ProductModel).join(CategoryModel).where(
+        ProductModel.is_active == True,
+        CategoryModel.is_active == True,
+        ProductModel.stock > 0
+    )
     products = db.scalars(stmt).all()
     return products
 
@@ -130,13 +134,7 @@ async def delete_product(product_id: int, db: Session = Depends(get_db)):
     if db_product is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Product not found or inactive")
 
-    db.execute(
-        update(ProductModel).where(
-            ProductModel.id == product_id
-        ).values(
-            is_active = False
-        )
-    )
+    db_product.is_active = False
     db.commit()
 
     return {"status": "success", "message": "Product marked as inactive"}
