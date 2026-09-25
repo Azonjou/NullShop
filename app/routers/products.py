@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.models.products import Product as ProductModel
 from app.schemas import Product as ProductShema, ProductCreate

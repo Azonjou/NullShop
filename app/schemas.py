@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from decimal import Decimal
 
 class CategoryCreate(BaseModel):
@@ -119,6 +119,11 @@ class Product(BaseModel):
     )
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserCreate(BaseModel):
+    email: EmailStr = Field(description="Email пользователя")
+    password: str = Field(min_length=8, description="Пароль (минимум 8 символов)")
+
 
 
 
