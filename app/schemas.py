@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from decimal import Decimal
 
+
+
 class CategoryCreate(BaseModel):
     """
     Модель для создания и обновления категории.
@@ -121,9 +123,18 @@ class Product(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class UserCreate(BaseModel):
-    email: EmailStr = Field(description="Email пользователя")
-    password: str = Field(min_length=8, description="Пароль (минимум 8 символов)")
-    role: str = Field(default="buyer", pattern="^(buyer|seller)$", description="Роль: 'buyer' or 'seller'")
+    email: EmailStr = Field(
+        description="Email пользователя"
+    )
+    password: str = Field(
+        min_length=8,
+        description="Пароль (минимум 8 символов)"
+    )
+    role: str = Field(
+        default="buyer",
+        pattern="^(buyer|seller)$",
+        description="Роль: 'buyer' or 'seller'"
+    )
 
 class User(BaseModel):
     id: int
