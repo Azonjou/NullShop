@@ -11,6 +11,7 @@ from app.schemas import Category
 if TYPE_CHECKING:
     from app.models.categories import Category
     from app.models.users import User
+    from app.models.reviews import Review
 
 
 class Product(Base):
@@ -31,3 +32,8 @@ class Product(Base):
         back_populates="products",
     )
     seller: Mapped["User"] = relationship("User", back_populates="products")
+
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review",
+        back_populates="products",
+    )

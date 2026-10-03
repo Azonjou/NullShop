@@ -1,0 +1,35 @@
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last, ForeignKey, Text, DateTime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from typing import TYPE_CHECKING
+
+from app.database import Base
+from app.schemas import Category
+
+if TYPE_CHECKING:
+    from app.models.products import Product
+    from app.models.users import User
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    product_id: Mapped[int] = mapped_column(Integer, ForeignKey('products.id'))
+    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    comment_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    grade: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: bool = mapped_column(Boolean, default=True)
+
+    user: Mapped["User"] = relationship(
+        "User",
+        back_populates="reviews"
+    )
+
+    product: Mapped["Product"] = relationship(
+        "Product",
+        back_populates="reviews"
+    )
