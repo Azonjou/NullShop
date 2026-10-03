@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last, ForeignKey
+from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from typing import TYPE_CHECKING
@@ -26,6 +26,7 @@ class Product(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
     seller_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    rating: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=0.00, server_default=text('0'))
 
     category: Mapped["Category"] = relationship(
         "Category",

@@ -144,6 +144,52 @@ class User(BaseModel):
     role: str
     model_config = ConfigDict(from_attributes=True)
 
+class Review(BaseModel):
+    id: int = Field(
+        ...,
+        description="Уникальный идентификатор ID отзыва"
+    )
+    user_id: int = Field(
+        ...,
+        description="ID пользователя"
+    )
+    product_id: int = Field(
+        ...,
+        description="ID продукта"
+    )
+    comment: str | None = Field(
+        default=None,
+        max_length=500,
+        description="Сам текст отзыва"
+    )
+    comment_data: str = Field(
+        ...,
+        description="Дата и время создания"
+    )
+    grade: int = Field(
+        ge=1,
+        le=5,
+        description="Количество звезд в ГТА"
+    )
+    is_active: bool = Field(
+        ...,
+        description="Статут отзыва"
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+class CreateReview(BaseModel):
+    comment: str | None = Field(
+        default=None,
+        max_length=500,
+        description="Сам текст отзыва"
+    )
+    grade: int = Field(
+        ge=1,
+        le=5,
+        description="Количество звезд в ГТА"
+    )
+
 
 
 
