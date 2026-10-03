@@ -178,7 +178,7 @@ class Review(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class CreateReview(BaseModel):
+class ReviewCreate(BaseModel):
     comment: str | None = Field(
         default=None,
         max_length=500,

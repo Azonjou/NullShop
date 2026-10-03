@@ -7,9 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.auth import get_current_seller
+
 from app.models.products import Product as ProductModel
 from app.schemas import Product as ProductShema, ProductCreate
+
 from app.models.categories import Category as CategoryModel
+
+from app.models.reviews import Review as ReviewModel
+from app.schemas import Review as ReviewShema, ReviewCreate
+
 from app.db_depends import get_async_db
 
 from app.models.users import User as UserModel
@@ -162,3 +168,28 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_async_d
     await db.commit()
     await db.refresh(db_product)
     return {"status": "success", "message": "Product marked as inactive"}
+
+@router.get("/{product_id}/reviews", response_model=list[ReviewShema], status_code=status.HTTP_200_OK)
+async def get_reviews_product(product_id: int, db: AsyncSession = Depends(get_async_db)):
+    stmt = await db.scalars(
+        select(ProductModel).where(
+            ProductModel.id == product_id,
+            ProductModel.is_active == True
+        )
+    )
+
+    product = stmt.first()
+
+    if product is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found or inactive")
+
+    result = await db.scalars(
+        select(ReviewModel).where(
+            ReviewModel.product_id == product_id,
+            ReviewModel.is_active == True
+        )
+    )
+
+    review = result.all()
+
+    return review
