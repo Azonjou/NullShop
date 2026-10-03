@@ -21,7 +21,7 @@ class Review(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     comment_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     grade: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: bool = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     user: Mapped["User"] = relationship(
         "User",
