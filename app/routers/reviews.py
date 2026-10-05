@@ -91,6 +91,16 @@ async def create_review(review: ReviewCreate, current_user: UserModel = Depends(
     if current_user.role != "buyer":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to perform this action")
 
+    count_reviews = await db.scalar(
+        select(func.count(ReviewModel.id)).where(
+            ReviewModel.is_active == True,
+            ReviewModel.user_id == current_user.id,
+        )
+    )
+
+    if count_reviews > 0:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Review already exists")
+
     db_review = ReviewModel(**review.model_dump(), user_id=current_user.id)
     db.add(db_review)
     await db.commit()
