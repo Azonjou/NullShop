@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from decimal import Decimal
+from datetime import datetime
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
@@ -116,6 +117,11 @@ class Product(BaseModel):
         ...,
         description="ID категории"
     )
+    rating: float = Field(
+        ge=1.0,
+        le=5.0,
+        description="Количество звезд в ГТА"
+    )
     is_active: bool = Field(
         ...,
         description="Активность товара"
@@ -133,7 +139,7 @@ class UserCreate(BaseModel):
     )
     role: str = Field(
         default="buyer",
-        pattern="^(buyer|seller)$",
+        pattern="^(buyer|seller|admin)$",
         description="Роль: 'buyer' or 'seller'"
     )
 
@@ -162,7 +168,7 @@ class Review(BaseModel):
         max_length=500,
         description="Сам текст отзыва"
     )
-    comment_data: str = Field(
+    comment_date: datetime = Field(
         ...,
         description="Дата и время создания"
     )
@@ -183,6 +189,10 @@ class ReviewCreate(BaseModel):
         default=None,
         max_length=500,
         description="Сам текст отзыва"
+    )
+    product_id: int = Field(
+        ...,
+        description="ID продукта"
     )
     grade: int = Field(
         ge=1,

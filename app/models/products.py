@@ -36,5 +36,5 @@ class Product(Base):
 
     reviews: Mapped[list["Review"]] = relationship(
         "Review",
-        back_populates="products",
+        back_populates="product",
     )
