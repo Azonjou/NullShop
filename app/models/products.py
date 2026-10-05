@@ -26,7 +26,7 @@ class Product(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
     seller_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    rating: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=0.00, server_default=text('0'))
+    rating: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=0.00, server_default=text('0')) #Экзамен
 
     category: Mapped["Category"] = relationship(
         "Category",
@@ -34,6 +34,7 @@ class Product(Base):
     )
     seller: Mapped["User"] = relationship("User", back_populates="products")
 
+    # Экзамен
     reviews: Mapped[list["Review"]] = relationship(
         "Review",
         back_populates="product",

@@ -169,8 +169,15 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_async_d
     await db.refresh(db_product)
     return {"status": "success", "message": "Product marked as inactive"}
 
+#Экзамен
 @router.get("/{product_id}/reviews", response_model=list[ReviewShema], status_code=status.HTTP_200_OK)
 async def get_reviews_product(product_id: int, db: AsyncSession = Depends(get_async_db)):
+    """
+    Получение всех активных отзывов конкретного товара по id
+    :param product_id:
+    :param db:
+    :return:
+    """
     stmt = await db.scalars(
         select(ProductModel).where(
             ProductModel.id == product_id,
