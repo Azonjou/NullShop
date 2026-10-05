@@ -26,6 +26,12 @@ router = APIRouter(
 )
 
 async def count_grade(product_id: int, db: AsyncSession):
+    """
+    Считает среднее арифметческое все оценок товара
+    :param product_id:
+    :param db:
+    :return:
+    """
     reviews_result = await db.execute(
         select(func.avg(ReviewModel.grade)).where(
             ReviewModel.product_id == product_id,
@@ -43,6 +49,11 @@ async def count_grade(product_id: int, db: AsyncSession):
 
 @router.get("/", response_model=list[ReviewShema])
 async def get_all_reviews(db: AsyncSession = Depends(get_async_db)):
+    """
+    Получает список всех активнх отзывов
+    :param db:
+    :return:
+    """
     result = await db.scalars(
         select(ReviewModel)
         .join(ProductModel)
@@ -58,6 +69,13 @@ async def get_all_reviews(db: AsyncSession = Depends(get_async_db)):
 
 @router.post("/", response_model=ReviewShema, status_code=status.HTTP_201_CREATED)
 async def create_review(review: ReviewCreate, current_user: UserModel = Depends(get_current_buyer), db: AsyncSession = Depends(get_async_db)):
+    """
+    Создание нового отзыва
+    :param review:
+    :param current_user:
+    :param db:
+    :return:
+    """
     product_result = await db.scalars(
         select(ProductModel).where(
             ProductModel.id == review.product_id,
@@ -82,6 +100,13 @@ async def create_review(review: ReviewCreate, current_user: UserModel = Depends(
 
 @router.delete("/{review_id}", response_model=dict, status_code=status.HTTP_200_OK)
 async def delete_review_id(review_id: int, current_user: UserModel = Depends(get_current_buyer), db: AsyncSession = Depends(get_async_db)):
+    """
+    Удаление отзыва (логическое удаление is_active=False)
+    :param review_id:
+    :param current_user:
+    :param db:
+    :return:
+    """
     review_result = await db.scalars(
         select(ReviewModel).where(
             ReviewModel.id == review_id,
