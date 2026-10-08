@@ -62,7 +62,7 @@ async def get_all_products(
         filters.append(ProductModel.seller_id == seller_id)
 
     total_stmt = select(func.count()).select_from(ProductModel).where(*filters)
-    total = await db.scalars(total_stmt) or 0
+    total = await db.scalar(total_stmt) or 0
 
     products_stmt = (
         select(ProductModel)
@@ -72,7 +72,7 @@ async def get_all_products(
         .limit(page_size)
     )
     items = (await db.scalars(products_stmt)).all()
-    
+
     return {
         "items": items,
         "total": total,
