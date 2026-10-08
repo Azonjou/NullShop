@@ -129,8 +129,11 @@ async def delete_review_id(review_id: int, current_user: UserModel = Depends(get
     if review is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found or not active")
 
-    if current_user.role not in ("buyer", "admin"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to perform this action")
+    if current_user.role != "admin" and review.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can delete only your own review",
+        )
 
     product_result = await db.scalars(
         select(ProductModel).where(
