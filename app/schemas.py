@@ -118,7 +118,7 @@ class Product(BaseModel):
         description="ID категории"
     )
     rating: float = Field(
-        ge=1.0,
+        ge=0.0,
         le=5.0,
         description="Количество звезд в ГТА"
     )
