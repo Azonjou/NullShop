@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select, update
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy import select, update, func, desc
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -9,7 +9,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from app.auth import get_current_seller
 
 from app.models.products import Product as ProductModel
-from app.schemas import Product as ProductShema, ProductCreate
+from app.schemas import Product as ProductShema, ProductCreate, ProductList
 
 from app.models.categories import Category as CategoryModel
 
@@ -27,18 +27,30 @@ router = APIRouter(
     tags=["products"],
 )
 
-@router.get("/", response_model=list[ProductShema], status_code=status.HTTP_200_OK)
-async def get_all_products(db: AsyncSession = Depends(get_async_db)):
-    """Возвращаем список всех товаров"""
-    stmt = await db.scalars(
-        select(ProductModel).join(CategoryModel).where(
-            ProductModel.is_active == True,
-            CategoryModel.is_active == True,
-            ProductModel.stock > 0
-        )
+@router.get("/", response_model=ProductList, status_code=status.HTTP_200_OK)
+async def get_all_products(page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100), db: AsyncSession = Depends(get_async_db)):
+    """
+    Возвращаем список всех товаров
+    """  
+    total_stmt = select(func.count()).select_from(ProductModel).where(
+        ProductModel.is_active == True
     )
-    products = stmt.all()
-    return products
+    total = await db.scalars(total_stmt) or 0
+
+    products_stmt = (
+        select(ProductModel)
+        .where(ProductModel.is_active == True)
+        .order_by(ProductModel.id)
+        .offset((page-1) * page_size)
+        .limit(page_size)
+    )
+    items = (await db.scalars(products_stmt)).all()
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 @router.post("/", response_model=ProductShema, status_code=status.HTTP_201_CREATED)
 async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_async_db), current_user: UserModel = Depends(get_current_seller)):
