@@ -187,7 +187,7 @@ async def update_product(product_id: int, product: ProductCreate, db: AsyncSessi
     await db.execute(
         update(ProductModel).where(
             ProductModel.id == product_id
-        ).values(**update_data)
+        ).values(**update_data, updated_at = datetime.now())
     )
     await db.commit()
     await db.refresh(db_product)

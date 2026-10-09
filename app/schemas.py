@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, Field, ConfigDict, EmailStr, field_serializer
 from decimal import Decimal
 from datetime import datetime
 
@@ -136,6 +136,12 @@ class Product(BaseModel):
     )
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", "updated_at")
+    def serialize_datetime(self, dt: datetime | None) -> str | None:
+        if dt is None:
+            return None
+        return dt.strftime("%Y.%m.%d %H:%M:%S")
 
 class ProductList(BaseModel):
     """
