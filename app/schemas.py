@@ -225,6 +225,14 @@ class ReviewCreate(BaseModel):
         description="Количество звезд в ГТА"
     )
 
+class ReviewList(BaseModel):
+    items: list[Review] = Field(description="Список возвращаемых отзывов")
+    total: int = Field(ge=0, description="Общее количество отзывов товара")
+    page: int = Field(ge=1, description="Текущая страница")
+    page_size: int = Field(ge=1, description="Количество отзывов на одной странице")
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 
 

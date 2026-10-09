@@ -17,7 +17,7 @@ from app.schemas import Product as ProductShema, ProductCreate, ProductList
 from app.models.categories import Category as CategoryModel
 
 from app.models.reviews import Review as ReviewModel
-from app.schemas import Review as ReviewShema, ReviewCreate
+from app.schemas import Review as ReviewShema, ReviewCreate, ReviewList
 
 from app.db_depends import get_async_db
 
@@ -219,33 +219,36 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_async_d
     return {"status": "success", "message": "Product marked as inactive"}
 
 #Экзамен
-@router.get("/{product_id}/reviews", response_model=list[ReviewShema], status_code=status.HTTP_200_OK)
-async def get_reviews_product(product_id: int, db: AsyncSession = Depends(get_async_db)):
+@router.get("/{product_id}/reviews", response_model=ReviewList, status_code=status.HTTP_200_OK)
+async def get_reviews_product(product_id: int,
+                              page: int = Query(1, ge=1),
+                              page_size: int = Query(10, ge=1),
+                              db: AsyncSession = Depends(get_async_db)):
     """
     Получение всех активных отзывов конкретного товара по id
     :param product_id:
+    :param page:
+    :param page_size:
     :param db:
     :return:
     """
-    stmt = await db.scalars(
-        select(ProductModel).where(
-            ProductModel.id == product_id,
-            ProductModel.is_active == True
-        )
+
+    total_stmt = select(func.count()).select_from(ReviewModel).where(ReviewModel.product_id == product_id, ReviewModel.is_active == True)
+    total = await db.scalar(total_stmt) or 0
+
+    reviews_stmt = (
+        select(ReviewModel)
+        .where(ReviewModel.product_id == product_id, ReviewModel.is_active == True)
+        .order_by(ReviewModel.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
     )
 
-    product = stmt.first()
+    items = (await db.scalars(reviews_stmt)).all()
 
-    if product is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found or inactive")
-
-    result = await db.scalars(
-        select(ReviewModel).where(
-            ReviewModel.product_id == product_id,
-            ReviewModel.is_active == True
-        )
-    )
-
-    review = result.all()
-
-    return review
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
