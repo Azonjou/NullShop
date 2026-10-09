@@ -2,6 +2,9 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy import select, update, func, desc
+
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_400_BAD_REQUEST
@@ -36,6 +39,8 @@ async def get_all_products(
         max_price: float | None = Query(None, ge=0, description="Максимальная цена товара"),
         in_stock: bool | None = Query(None, description="True - только товары в наличии, false - только без остатка"),
         seller_id: int | None = Query(None, description="ID продавца для фильтрации"),
+        created_at: datetime | None = Query(None, description="Дата и время создания товара"),
+        updated_at: datetime | None = Query(None, description="Дата и время последнего изменения товара"),
         db: AsyncSession = Depends(get_async_db)):
     """
     Возвращаем список всех товаров
@@ -60,6 +65,10 @@ async def get_all_products(
         filters.append(ProductModel.stock > 0 if in_stock else ProductModel.stock == 0)
     if seller_id is not None:
         filters.append(ProductModel.seller_id == seller_id)
+    if created_at is not None:
+        filters.append(ProductModel.created_at == created_at)
+    if updated_at is not None:
+        filters.append(ProductModel.updated_at == updated_at)
 
     total_stmt = select(func.count()).select_from(ProductModel).where(*filters)
     total = await db.scalar(total_stmt) or 0

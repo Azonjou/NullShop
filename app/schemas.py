@@ -126,6 +126,14 @@ class Product(BaseModel):
         ...,
         description="Активность товара"
     )
+    created_at: datetime = Field(
+        ...,
+        description="Дата и время создания товара"
+    )
+    updated_at: datetime = Field(
+        ...,
+        description="Дата и время последнего обновления товара"
+    )
 
     model_config = ConfigDict(from_attributes=True)
 

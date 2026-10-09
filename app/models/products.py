@@ -1,6 +1,7 @@
 from decimal import Decimal
+from datetime import datetime, timezone
 
-from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last, ForeignKey, text
+from sqlalchemy import Integer, String, Boolean, Numeric, nulls_last, ForeignKey, text, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from typing import TYPE_CHECKING
@@ -26,7 +27,9 @@ class Product(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
     seller_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    rating: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=0.00, server_default=text('0')) #Экзамен
+    rating: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=0.00, server_default=text('0'))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=True)
 
     category: Mapped["Category"] = relationship(
         "Category",
