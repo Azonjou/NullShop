@@ -71,6 +71,7 @@ async def get_all_products(
     if updated_at is not None:
         filters.append(ProductModel.updated_at == updated_at)
 
+
     total_stmt = select(func.count()).select_from(ProductModel).where(*filters)
 
     rank_col = None
