@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.products import Product
     from app.models.reviews import Review
+    from app.models.cart_items import CartItem
 
 
 class User(Base):
@@ -28,3 +29,5 @@ class User(Base):
         "Review",
         back_populates="user"
     )
+
+    cart_items: Mapped[list[CartItem]] = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
