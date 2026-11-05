@@ -5,6 +5,10 @@ from datetime import datetime
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(min_length=8, description="Пароль (минимум 8 символов)")
+    new_password: str = Field(min_length=8, description="Пароль (минимум 8 символов)")
+
 class CategoryCreate(BaseModel):
     """
     Модель для создания и обновления категории.

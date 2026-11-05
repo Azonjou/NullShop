@@ -2,16 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm.sync import update
 
 from app.models.users import User as UserModel
-from app.schemas import UserCreate, User as UserSchema
 from app.db_depends import get_async_db
-from app.auth import hash_password, verify_password, create_access_token, create_refresh_token
+from app.auth import hash_password, verify_password, create_access_token, create_refresh_token, get_current_user
 
 import jwt
 
 from app.config import SECRET_KEY, ALGORITHM
-from app.schemas import UserCreate, User as UserSchema, RefreshTokenRequest
+from app.schemas import UserCreate, User as UserSchema, RefreshTokenRequest, ChangePasswordRequest
 
 router = APIRouter(
     prefix="/users",
@@ -160,3 +160,30 @@ async def refresh_token(body: RefreshTokenRequest, db: AsyncSession = Depends(ge
         "refresh_token": new_refresh_token,
         token_type: "bearer",
     }
+
+@router.put("/change-password", response_model=UserSchema, status_code=status.HTTP_200_OK)
+async def change_password(
+        passwords: ChangePasswordRequest,
+        db: AsyncSession = Depends(get_async_db),
+        current_user: UserModel = Depends(get_current_user)
+):
+    old_pass, new_pass = passwords.old_password, passwords.new_password
+
+    check_user = await db.scalar(
+        select(UserModel).where(
+            UserModel.email == current_user.email,
+            UserModel.is_active == True
+        )
+    )
+
+    if not check_user or not verify_password(old_pass, check_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+
+    current_user.hashed_password = hash_password(passwords.new_password)
+
+    await db.commit()
+    return current_user
+
