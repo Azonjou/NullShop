@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm.sync import update
 
 from app.models.users import User as UserModel
 from app.db_depends import get_async_db
@@ -186,4 +185,34 @@ async def change_password(
 
     await db.commit()
     return current_user
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def close_session_user(
+        user_id: int,
+        db: AsyncSession = Depends(get_async_db),
+        current_user: UserModel = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Incorrect role",
+        )
+
+    check_user = await db.scalar(
+        select(UserModel).where(
+            UserModel.id == user_id,
+            UserModel.is_active == True
+        )
+    )
+
+    if not check_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found or inactive")
+
+    await db.execute(
+        update(UserModel).where(
+            UserModel.id == user_id,
+        ).values(is_active=False)
+    )
+    await db.commit()
+    await db.refresh(check_user)
 
